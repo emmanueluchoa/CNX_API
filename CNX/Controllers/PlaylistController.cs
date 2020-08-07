@@ -29,13 +29,20 @@ namespace CNX_API.Controllers
             try
             {
                 Claim locality = User.Claims.FirstOrDefault(claim => claim.Type.Equals(ClaimTypes.Locality));
+
+                LogTraceVM logTrace = new LogTraceVM(string.Empty, "PlaylistController", "GetPlaylist");
+                logTrace.Parameters.Add(locality);
+
                 PlaylistVM playlist = this._playlistApplication.GetPlaylistByWeatherLocalityCondition(locality.Value);
+
+                logTrace.Parameters.Add(playlist);
 
                 return Ok(playlist);
             }
             catch (Exception error)
             {
-                this._logger.LogError(error, error.Message);
+                LogErrorVM logError = new LogErrorVM(error.Message, error.StackTrace, "PlaylistController", "GetPlaylist");
+                this._logger.LogError(error, logError.ToString());
                 return BadRequest(error.Message);
             }
         }

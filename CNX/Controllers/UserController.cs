@@ -1,4 +1,5 @@
-﻿using CNX_Domain.Interfaces.Application;
+﻿using CNX_Domain.Entities.Enums;
+using CNX_Domain.Interfaces.Application;
 using CNX_Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
@@ -29,6 +30,9 @@ namespace CNX_API.Controllers
             {
                 var userList = this._userApplication.GetUsers();
 
+                LogTraceVM logTrace = new LogTraceVM(string.Empty, "UserController", "GetAllUsers");
+                logTrace.Parameters.Add(userList);
+
                 if (userList.Any())
                     return Ok(userList);
                 else
@@ -36,7 +40,8 @@ namespace CNX_API.Controllers
             }
             catch (Exception error)
             {
-                this._logger.LogError(error, error.Message);
+                LogErrorVM logError = new LogErrorVM(error.Message, error.StackTrace, "UserController", "GetAllUsers");
+                this._logger.LogError(error, logError.ToString());
                 return BadRequest(error.Message);
             }
         }
@@ -47,6 +52,10 @@ namespace CNX_API.Controllers
             {
                 var user = this._userApplication.GetById(id);
 
+                LogTraceVM logTrace = new LogTraceVM(string.Empty, "GetUserById", "GetAllUsers");
+                logTrace.Parameters.Add(id);
+                logTrace.Parameters.Add(user);
+
                 if (null != user)
                     return Ok(user);
 
@@ -54,7 +63,9 @@ namespace CNX_API.Controllers
             }
             catch (Exception error)
             {
-                this._logger.LogError(error, error.Message, id);
+                LogErrorVM logError = new LogErrorVM(error.Message, error.StackTrace, "UserController", "GetUserById");
+                logError.Parameters.Add(id);
+                this._logger.LogError(error, logError.ToString());
                 return BadRequest(error.Message);
             }
         }
@@ -64,12 +75,18 @@ namespace CNX_API.Controllers
         {
             try
             {
+                LogTraceVM logTrace = new LogTraceVM(string.Empty, "GetUserById", "GetAllUsers");
+                logTrace.Parameters.Add(user);
+
                 user = this._userApplication.CreateUser(user);
+
                 return Ok(user);
             }
             catch (Exception error)
             {
-                this._logger.LogError(error, error.Message, user);
+                LogErrorVM logError = new LogErrorVM(error.Message, error.StackTrace, "UserController", "CreateUser");
+                logError.Parameters.Add(user);
+                this._logger.LogError(error, logError.ToString());
                 return BadRequest(error.Message);
             }
         }

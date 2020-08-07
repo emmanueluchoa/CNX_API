@@ -4,7 +4,6 @@ using CNX_Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 
 namespace CNX_API.Controllers
@@ -13,13 +12,11 @@ namespace CNX_API.Controllers
     [ApiController]
     public class AuthenticateController : ControllerBase
     {
-        private readonly IUserApplication _userApplication;
         private readonly IJWTApi _tokenService;
         private readonly ILogger<AuthenticateController> _logger;
 
         public AuthenticateController(IUserApplication userApplication, IJWTApi tokenService, ILogger<AuthenticateController> logger)
         {
-            this._userApplication = userApplication;
             this._tokenService = tokenService;
             this._logger = logger;
         }
@@ -31,14 +28,19 @@ namespace CNX_API.Controllers
             try
             {
                 AuthenticatedUserVM authenticatedUser = this._tokenService.GenerateApiToken(user.UserName, user.UserPassword);
+
+                LogTraceVM logTrace = new LogTraceVM(string.Empty, "AuthenticateController", "Authenticate");
+                logTrace.Parameters.Add(user);
+
                 return Ok(authenticatedUser);
             }
             catch (Exception error)
             {
-                this._logger.LogError(error, error.Message, user);
+                LogErrorVM logError = new LogErrorVM(error.Message, error.StackTrace, "AuthenticateController", "Authenticate");
+                logError.Parameters.Add(user);
+                this._logger.LogError(error, logError.ToString());
                 return BadRequest(error.Message);
             }
-
         }
     }
 }
