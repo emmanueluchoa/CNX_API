@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -9,6 +10,7 @@ namespace CNX_Domain.Entities
     public abstract class EntityBase<T> : AbstractValidator<T> where T : EntityBase<T>
     {
         [NotMapped]
+        [JsonIgnore]
         public ValidationResult ValidationResult { get; set; }
         protected EntityBase()
         {

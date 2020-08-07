@@ -1,12 +1,11 @@
-﻿using CNX_Domain.Entities.Enums;
-using CNX_Domain.Interfaces.Application;
+﻿using CNX_Domain.Interfaces.Application;
 using CNX_Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CNX_API.Controllers
 {
@@ -23,69 +22,59 @@ namespace CNX_API.Controllers
             this._logger = logger;
         }
 
-        [HttpGet]
-        public ActionResult<IList<UserVM>> GetAllUsers()
-        {
-            try
-            {
-                var userList = this._userApplication.GetUsers();
-
-                LogTraceVM logTrace = new LogTraceVM(string.Empty, "UserController", "GetAllUsers");
-                logTrace.Parameters.Add(userList);
-
-                if (userList.Any())
-                    return Ok(userList);
-                else
-                    return NoContent();
-            }
-            catch (Exception error)
-            {
-                LogErrorVM logError = new LogErrorVM(error.Message, error.StackTrace, "UserController", "GetAllUsers");
-                this._logger.LogError(error, logError.ToString());
-                return BadRequest(error.Message);
-            }
-        }
-        [HttpGet("{id}")]
-        public ActionResult<UserVM> GetUserById(string id)
-        {
-            try
-            {
-                var user = this._userApplication.GetById(id);
-
-                LogTraceVM logTrace = new LogTraceVM(string.Empty, "GetUserById", "GetAllUsers");
-                logTrace.Parameters.Add(id);
-                logTrace.Parameters.Add(user);
-
-                if (null != user)
-                    return Ok(user);
-
-                return NotFound();
-            }
-            catch (Exception error)
-            {
-                LogErrorVM logError = new LogErrorVM(error.Message, error.StackTrace, "UserController", "GetUserById");
-                logError.Parameters.Add(id);
-                this._logger.LogError(error, logError.ToString());
-                return BadRequest(error.Message);
-            }
-        }
-
+        /// <summary>
+        /// Create a new user.
+        /// </summary>
+        /// <param name="user">User data</param>
+        /// <returns>Message with sucess or error.</returns>
         [HttpPost]
-        public ActionResult<UserVM> CreateUser(UserVM user)
+        [Authorize]
+        public async Task<ActionResult> CreateUser(CreateUserVM user)
         {
             try
             {
                 LogTraceVM logTrace = new LogTraceVM(string.Empty, "GetUserById", "GetAllUsers");
                 logTrace.Parameters.Add(user);
 
-                user = this._userApplication.CreateUser(user);
+                var retorno = await this._userApplication.CreateUser(user);
 
-                return Ok(user);
+                return Ok($"User {user.UserName} successfully created!");
             }
             catch (Exception error)
             {
                 LogErrorVM logError = new LogErrorVM(error.Message, error.StackTrace, "UserController", "CreateUser");
                 logError.Parameters.Add(user);
+                this._logger.LogError(error, logError.ToString());
+                return BadRequest(error.Message);
+            }
+        }
+
+        /// <summary>
+        /// Reset user password.
+        /// </summary>
+        /// <param name="reset"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Authorize]
+        [Route("reset")]
+        public async Task<ActionResult> ResetPasswordAsync(ResetPasswordUserVM reset)
+        {
+            try
+            {
+                LogTraceVM logTrace = new LogTraceVM(string.Empty, "GetUserById", "GetAllUsers");
+                logTrace.Parameters.Add(reset);
+
+                if (ModelState.IsValid)
+                    await this._userApplication.ResetPasswordAsync(reset);
+                else
+                    throw new Exception(string.Join(",", ModelState.Values.Where(value => value.Errors.Any()).Select(value => value.Errors.Select(error => error.ErrorMessage))));
+
+                return Ok("Your password has been reseted!");
+            }
+            catch (Exception error)
+            {
+                LogErrorVM logError = new LogErrorVM(error.Message, error.StackTrace, "UserController", "CreateUser");
+                logError.Parameters.Add(reset);
                 this._logger.LogError(error, logError.ToString());
                 return BadRequest(error.Message);
             }

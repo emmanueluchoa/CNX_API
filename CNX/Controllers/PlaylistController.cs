@@ -22,6 +22,10 @@ namespace CNX_API.Controllers
             this._logger = logger;
         }
 
+        /// <summary>
+        /// Sugest a music playlist by user location weather.
+        /// </summary>
+        /// <returns>Music playlist.</returns>
         [HttpGet]
         [Authorize]
         public ActionResult GetPlaylist()
