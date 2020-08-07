@@ -1,8 +1,8 @@
-﻿using CNX_Domain.Entities;
-using CNX_Domain.Interfaces.Application;
+﻿using CNX_Domain.Interfaces.Application;
 using CNX_Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +14,12 @@ namespace CNX_API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserApplication _userApplication;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserApplication userApplication)
+        public UserController(IUserApplication userApplication, ILogger<UserController> logger)
         {
             this._userApplication = userApplication;
+            this._logger = logger;
         }
 
         [HttpGet]
@@ -34,6 +36,7 @@ namespace CNX_API.Controllers
             }
             catch (Exception error)
             {
+                this._logger.LogError(error, error.Message);
                 return BadRequest(error.Message);
             }
         }
@@ -51,6 +54,7 @@ namespace CNX_API.Controllers
             }
             catch (Exception error)
             {
+                this._logger.LogError(error, error.Message, id);
                 return BadRequest(error.Message);
             }
         }
@@ -65,6 +69,7 @@ namespace CNX_API.Controllers
             }
             catch (Exception error)
             {
+                this._logger.LogError(error, error.Message, user);
                 return BadRequest(error.Message);
             }
         }

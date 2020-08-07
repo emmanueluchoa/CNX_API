@@ -2,6 +2,7 @@
 using CNX_Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Security.Claims;
@@ -13,10 +14,12 @@ namespace CNX_API.Controllers
     public class PlaylistController : ControllerBase
     {
         private readonly IPlaylistApplication _playlistApplication;
+        private readonly ILogger<PlaylistController> _logger;
 
-        public PlaylistController(IPlaylistApplication playlistApplication)
+        public PlaylistController(IPlaylistApplication playlistApplication, ILogger<PlaylistController> logger)
         {
             this._playlistApplication = playlistApplication;
+            this._logger = logger;
         }
 
         [HttpGet]
@@ -32,6 +35,7 @@ namespace CNX_API.Controllers
             }
             catch (Exception error)
             {
+                this._logger.LogError(error, error.Message);
                 return BadRequest(error.Message);
             }
         }
