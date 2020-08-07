@@ -10,9 +10,15 @@ namespace CNX_Domain.AutoMapper
         {
             CreateMap<User, UserVM>();
 
-            CreateMap<UserVM, User>()
-                .ForMember(user => user.CascadeMode, vm => vm.Ignore())
-                .ForMember(user => user.ValidationResult, vm => vm.Ignore());
+            CreateMap<UserVM, User>();
+            CreateMap<UserVM, UserFullVM>();
+            CreateMap<UserVM, CreateUserVM>();
+
+            CreateMap<UserFullVM, User>();
+            CreateMap<UserFullVM, UserVM>();
+
+            CreateMap<CreateUserVM, UserVM>();
+            CreateMap<CreateUserVM, UserFullVM>();
 
             CreateMap<PersonalNote, PersonalNoteVM>();
 
@@ -21,7 +27,7 @@ namespace CNX_Domain.AutoMapper
         }
         public void Register()
         {
-          
+
         }
     }
 }

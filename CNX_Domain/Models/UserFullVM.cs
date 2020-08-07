@@ -1,20 +1,26 @@
 ﻿using CNX_Domain.Entities;
 using FluentValidation;
+using System.ComponentModel.DataAnnotations;
 
 namespace CNX_Domain.Models
 {
-    public class UserVM : EntityBase<UserVM>
+    public class UserFullVM : EntityBase<UserFullVM>
     {
         public string Id { get; set; }
+        [Required]
         public string Email { get; set; }
+        [Required]
         public string UserName { get; set; }
         public string Locale { get; set; }
+        [Required]
+        public string UserPassword { get; set; }
 
         protected override void Validate()
         {
             ValidateUserName();
-            ValidateUserHomeTown();
             ValidateUserEmail();
+            ValidateUserPassword();
+            ValidateUserHomeTown();
         }
 
         private void ValidateUserName()
@@ -34,6 +40,12 @@ namespace CNX_Domain.Models
             RuleFor(rule => rule.Email)
                 .NotEmpty().WithMessage("User email must be provided!")
                 .EmailAddress().WithMessage("User email must be valid!");
+        }
+
+        private void ValidateUserPassword()
+        {
+            RuleFor(rule => rule.UserPassword)
+                .NotEmpty().WithMessage("User password must be provided!");
         }
     }
 }

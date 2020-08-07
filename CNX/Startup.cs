@@ -1,15 +1,15 @@
 using AutoMapper;
 using CNX_Domain.Application;
 using CNX_Domain.AutoMapper;
+using CNX_Domain.Entities;
 using CNX_Domain.Interfaces.Application;
-using CNX_Domain.Interfaces.Repository;
 using CNX_Domain.Interfaces.Services;
 using CNX_Domain.Services;
 using CNX_Repository.Context;
-using CNX_Repository.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +33,16 @@ namespace CNX
             services.AddCors();
             services.AddControllers();
 
+            services.AddDbContext<CnxContext>(options => options.UseSqlServer(Configuration.GetConnectionString("CnxConnection")));
+
+            services.AddIdentity<User, IdentityRole>(options =>
+            {
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+            })
+                   .AddEntityFrameworkStores<CnxContext>()
+                   .AddDefaultTokenProviders();
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -51,12 +61,11 @@ namespace CNX
                     };
                 });
 
-            services.AddDbContext<CnxContext>(options => options.UseSqlServer(Configuration.GetConnectionString("CnxConnection")));
-
             ConfigureAutoMapper(services);
-            ConfigureRepositoryDependency(services);
             ConfigureServicesDependecy(services);
             ConfigureApplicationDepency(services);
+
+            services.AddSwaggerGen();
         }
 
         private static void ConfigureAutoMapper(IServiceCollection services)
@@ -68,11 +77,6 @@ namespace CNX
         {
             services.AddScoped<IUserApplication, UserApplication>();
             services.AddScoped<IPlaylistApplication, PlaylistApplication>();
-        }
-
-        private static void ConfigureRepositoryDependency(IServiceCollection services)
-        {
-            services.AddScoped<IUserRepository, UserRepository>();
         }
 
         private static void ConfigureServicesDependecy(IServiceCollection services)
@@ -101,6 +105,13 @@ namespace CNX
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "CNX Api V1");
             });
         }
     }

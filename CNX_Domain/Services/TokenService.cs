@@ -7,6 +7,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CNX_Domain.Services
 {
@@ -20,12 +21,9 @@ namespace CNX_Domain.Services
             this._userApplication = userApplication;
         }
 
-        public AuthenticatedUserVM GenerateApiToken(string username, string userpass)
+        public async Task<AuthenticatedUserVM> GenerateApiToken(string username, string userpass)
         {
-            if (!this._userApplication.ValidateIfUserExists(username, userpass))
-                throw new Exception("User not found.");
-
-            UserVM user = this._userApplication.GetUser(username, userpass);
+            UserVM user = await this._userApplication.GetUser(username, userpass);
 
             var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
             SecurityTokenDescriptor securityTokenDescriptor = GenerateSecurityTokenDescriptor(user);
@@ -48,8 +46,8 @@ namespace CNX_Domain.Services
                 Subject = new ClaimsIdentity(new Claim[] {
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
                     new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.Email, user.UserEmail),
-                    new Claim(ClaimTypes.Locality, user.UserHomeTown),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Locality, user.Locale),
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = GenerateSigningCredentials()
